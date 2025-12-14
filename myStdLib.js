@@ -168,6 +168,14 @@ Array.prototype.max = function(){
   return Math.max.apply(null, this);
 };
 
+/* returns the SVG coordinates of pointer within SVG as array [x,y] */
+SVGSVGElement.prototype.coord = function(e){
+  let vb = this.getViewBox();
+  let perc = this.perc(e);
+  
+  return [vb[0]+vb[2]*perc[0], vb[1]+vb[3]*perc[1]];
+};
+
 /* returns parsed viewBox of SVG (numbers) as array [x,y,viewBoxWidth,viewBoxHeight] */
 SVGSVGElement.prototype.getViewBox = function(){
   return this.getAttribute("viewBox").split(" ").map((v) => parseFloat(v,10));
@@ -200,15 +208,3 @@ SVGSVGElement.prototype.resize = function(){
   
   this.setViewBox(center[1]-0.5*vbx, null,null, null);
 };
-
-/* returns the SVG coordinates of pointer within SVG as array [x,y] */
-SVGSVGElement.prototype.coord = function(e){
-  let vb = this.getViewBox();
-  let perc = this.perc(e);
-  
-  return [vb[0]+vb[2]*perc[0], vb[1]+vb[3]*perc[1]];
-};
-
-function test(){
-  console.log("Succes!");
-}
