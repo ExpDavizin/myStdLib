@@ -13,7 +13,7 @@ function $$$(selector){
 function root(object){
   Object.keys(object).forEach(att => {
 	  document.documentElement.style.setProperty(att, object[att]);
-	});
+  });
 }
 
 function clamp(value, min, max) {
