@@ -10,29 +10,22 @@ function $$$(selector){
   return document.querySelectorAll(selector);
 }
 
-function children(group){
-  return [...group.children];
+function root(object){
+  Object.keys(object).forEach(att => {
+	  document.documentElement.style.setProperty(att, object[att]);
+	});
 }
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-function root(){
-  if(arguments.length % 2 != 0){
-    console.error(`Missig variable/value in root().`);
-  }
-  for(let i = 0; i < arguments.length; i += 2){
-    document.documentElement.style.setProperty(arguments[i], arguments[i+1]);
-  }
+function dist(p1, p2){
+  return Math.sqrt((p2.x - p1.x)**2 + (p2.y - p1.y)**2);
 }
 
-function dist(C1, C2){
-  return Math.sqrt((C2[0] - C1[0])**2 + (C2[1] - C1[1])**2);
-}
-
-function center(C1, C2){
-  return [(C1[0] + C2[0])/2, (C1[1] + C2[1])/2];
+function center(p1, p2){
+  return {"x": (p1.x + p2.x)/2, "y": (p1.y + p2.y)/2};
 }
 
 /* Credits to: Web Dev Simplified */
@@ -74,40 +67,22 @@ function throttle(cb, delay = 1000) {
   };
 }
 
-Element.prototype.pos = function(e){
-  let box = this.getBoundingClientRect();
 
-  let x = clamp(0, e.clientX - box.left, box.width);
-  let y = clamp(0, e.clientY - box.top, box.height);
-
-  return [x,y];
+Array.prototype.min = function(){
+	return Math.min.apply(null, this);
 };
 
-Element.prototype.perc = function(e){
-  let pos = this.pos(e);
-  let box = this.getBoundingClientRect();
-  let px = clamp(0, pos[0]/box.width, 1);
-  let py = clamp(0, pos[1]/box.height, 1);
-
-  return [px,py];
+Array.prototype.max = function(){
+	return Math.max.apply(null, this);
 };
 
-Element.prototype.attrs = function(){
-	if(arguments.length % 2 != 0){
-		console.error(`Missig argument/value in .attrs().`);
-	}
-	for(let i = 0; i < arguments.length; i += 2){
-		this.setAttribute(arguments[i], arguments[i+1]);
-	}
+
+Element.prototype.attrs = function(object){
+	Object.keys(object).forEach(att => {
+	  this.setAttribute(att, object[att]);
+	});
 	
 	return this;
-};
-
-Element.prototype.newElement = function(type){
-	let el = document.createElement(type);
-	this.appendChild(el);
-
-	return el;
 };
 
 Element.prototype.hasPointer = function(e){
@@ -125,6 +100,27 @@ Element.prototype.aspectRatio = function(){
 	return box.width/box.height;
 };
 
+Element.prototype.pos = function(e){
+  let box = this.getBoundingClientRect();
+
+  return {"x": clamp(0, e.clientX - box.left, box.width), "y": clamp(0, e.clientY - box.top, box.height)};
+};
+
+Element.prototype.perc = function(e){
+  let pos = this.pos(e);
+  let box = this.getBoundingClientRect();
+
+  return {"x": clamp(0, pos.x/box.width, 1), "y": clamp(0, pos.y/box.height, 1)};
+};
+
+Element.prototype.newElement = function(type){
+	let el = document.createElement(type);
+	this.appendChild(el);
+
+	return el;
+};
+
+
 SVGGElement.prototype.newElement = function(type){
 	let el = document.createElementNS("http://www.w3.org/2000/svg", type);
 	this.appendChild(el);
@@ -140,46 +136,48 @@ SVGGElement.prototype.newText = function(label){
 	return txt;
 };
 
-Array.prototype.min = function(){
-	return Math.min.apply(null, this);
+SVGGElement.prototype.asArray = function(){
+  return [...this.children];
 };
 
-Array.prototype.max = function(){
-	return Math.max.apply(null, this);
-};
-
-SVGSVGElement.prototype.svgpos = function(e){
-	let vb = this.getViewBox();
-	let perc = this.perc(e);
-	
-	return [vb[0]+vb[2]*perc[0], vb[1]+vb[3]*perc[1]];
-};
 
 SVGSVGElement.prototype.getViewBox = function(){
-	return this.getAttribute("viewBox").split(" ").map((v) => parseFloat(v,10));
+  let array = this.getAttribute("viewBox").split(" ").map((v) => parseFloat(v,10));
+  
+  return {"vbX": array[0], "vbY": array[1], "vbW": array[2], "vbH": array[3]};
 };
 
-SVGSVGElement.prototype.setViewBox = function(x, y, vbx, vby){
-	let newVB = this.getViewBox();
+SVGSVGElement.prototype.setViewBox = function(object){
+	let vb = this.getViewBox();
 	
-	[...arguments].forEach((arg,i) => {
-		if(arg != null){
-			newVB[i] = arg;
-		}
+	Object.keys(object).forEach(key => {
+	  vb[key] = object[key];
 	});
 	
-	this.setAttribute("viewBox", newVB.join(" "));
+	this.setAttribute("viewBox", `${vb.vbX} ${vb.vbY} ${vb.vbW} ${vb.vbH}`);
 };
 
 SVGSVGElement.prototype.center = function(){
 	let vb = this.getViewBox();
 	
-	return [vb[0]+vb[2]/2,vb[1]+vb[3]/2];
+	return {"x": vb.vbX + vb.vbW/2, "y": vb.vbY + vb.vbH/2};
 };
 
-SVGSVGElement.prototype.resize = function(){
-	let center = this.center();
-	let vbx = this.getViewBox()[3]*this.aspectRatio();
+SVGSVGElement.prototype.coord = function(e){
+	let vb = this.getViewBox();
+	let perc = this.perc(e);
+	
+	return {"x": vb.vbX + vb.vbW*perc.x, "y": vb.vbY + vb.vbH*perc.y};
+};
 
-	this.setViewBox(center[1]-0.5*vbx, null,null, null);
+SVGSVGElement.prototype.resizeX = function(){
+	let vb = this.getViewBox();
+  
+	this.setViewBox({"vbX": this.center().x - vb.vbH*this.aspectRatio()/2});
+};
+
+SVGSVGElement.prototype.resizeY = function(){
+	let vb = this.getViewBox();
+  
+	this.setViewBox({"vbY": this.center().y - vb.vbW/this.aspectRatio()/2});
 };
