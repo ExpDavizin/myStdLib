@@ -36,6 +36,19 @@ function client(x,y) {
 	return {"clientX": x, "clientY": y};
 }
 
+function time(ms) {
+	const yearsFloat = ms/(100*60*60*24*30*12),
+		  years = Math.floor(yearsFloat);
+		  monthsFloat = Math.decimal(yearsFloat)*12;
+		  months = Math.floor(monthsFloat);
+		  daysFloat = Math.decimal(monthsFloat)*30;
+		  days = Math.floor(daysFloat);
+		  hoursFloat = Math.decimal(daysFloat)*24;
+		  hours = Math.floor(hoursFloat);
+	
+	return [years, months, days, hours];
+}
+
 /* Credits to: Web Dev Simplified */
 function debounce(cb, delay = 1000) {
 	let timeout;
@@ -102,6 +115,12 @@ function lineInterc(p1,p2,q1,q2) {
 		}
 	}
 	return false;
+}
+
+
+Math.decimal = function(num) {
+	return num - Math.floor(num);
+	// return parseFloat("0."+`${num}`.split(".")[1]);
 }
 
 
