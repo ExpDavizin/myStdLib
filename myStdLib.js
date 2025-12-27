@@ -38,12 +38,12 @@ function client(x,y) {
 
 function time(ms) {
 	const yearsFloat = ms/(1000*60*60*24*30*12),
-		  years = Math.floor(yearsFloat);
-		  monthsFloat = Math.decimal(yearsFloat)*12;
-		  months = Math.floor(monthsFloat);
-		  daysFloat = Math.decimal(monthsFloat)*30;
-		  days = Math.floor(daysFloat);
-		  hoursFloat = Math.decimal(daysFloat)*24;
+		  years = Math.floor(yearsFloat),
+		  monthsFloat = Math.decimal(yearsFloat)*12,
+		  months = Math.floor(monthsFloat),
+		  daysFloat = Math.decimal(monthsFloat)*30,
+		  days = Math.floor(daysFloat),
+		  hoursFloat = Math.decimal(daysFloat)*24,
 		  hours = Math.floor(hoursFloat);
 	
 	return [years, months, days, hours];
